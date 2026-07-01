@@ -7,6 +7,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
+const { listingSchema } = require("./schema.js");
 
 
 
@@ -33,8 +34,18 @@ app.use(express.static(path.join(__dirname, "/public")));
 app.get("/", (req, res) => {
     res.send("hi i am root");
 })
+const validateListing = (req, res, next) => {
+        let { error } = listingSchema.validate(req.body);
 
-// index route - shows all listings
+        if (error) {
+            let errMsg = error.details.map((el) => el.message).join(",");
+            throw new ExpressError(400, errMsg);
+        } else {
+            next();
+        }
+
+    }
+    // index route - shows all listings
 app.get("/listings", async(req, res) => {
     const allListings = await Listing.find({}); // fetch every listing from DB
     res.render("listings/index.ejs", { allListings }); // send them to the index page
@@ -54,28 +65,20 @@ app.get("/listings/:id", async(req, res) => {
 })
 
 // create route - receives form data and saves a new listing to DB
-app.post("/listings", wrapAsync(async(req, res, next) => {
-        if (!req.body.listing) {
-            throw new ExpressError(400, "send valid data for listing");
-        }
-        const newListing = new Listing(req.body.listing); // build a new listing using submitted form data
-        await newListing.save(); // save it to MongoDB
-        res.redirect("/listings"); // go back to the index page to see it
+app.post("/listings", validateListing, wrapAsync(async(req, res, next) => {
+
+    const newListing = new Listing(req.body.listing); // build a new listing using submitted form data
+
+    await newListing.save(); // save it to MongoDB
+    res.redirect("/listings"); // go back to the index page to see it
 
 
-    }))
-    //edit route 
-app.get("/listings/:id", wrapAsync(async(req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    res.render("listings/show.ejs", { listing });
-}));
+}))
+
 
 //update
-app.put("/listings/:id", wrapAsync(async(req, res) => {
-    if (!req.body.listing) {
-        throw new ExpressError(400, "send valid data for listing");
-    }
+app.put("/listings/:id", validateListing, wrapAsync(async(req, res) => {
+
     let { id } = req.params;
     await Listing.findByIdAndUpdate(id, {...req.body.listing });
     res.redirect("/listings");

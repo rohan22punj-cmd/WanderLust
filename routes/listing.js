@@ -9,54 +9,55 @@ const validateListing = (req, res, next) => {
     let { error } = listingSchema.validate(req.body);
     if (error) {
         let errMsg = error.details.map((el) => el.message).join(",");
-        throw new ExpressError(400, errMsg);
-    } else {
-        next();
+        return next(new ExpressError(400, errMsg));
     }
-}
+    next();
+};
+router.get("/", wrapAsync(async(req, res) => {
+    const allListings = await Listing.find({});
+    console.log("listings found:", allListings.length);
+    console.log("first listing:", JSON.stringify(allListings[0]));
+    res.render("listings/index.ejs", { allListings });
+}));
 
-// index route - shows all listings
-router.get("/", async(req, res) => {
-    const allListings = await Listing.find({}); // fetch every listing from DB
-    res.render("listings/index.ejs", { allListings }); // send them to the index page
+router.get("/", wrapAsync(async(req, res) => {
+    const allListings = await Listing.find({});
+    res.render("listings/index.ejs", { allListings });
+}));
+
+router.get("/new", (req, res) => {
+    res.render("listings/new.ejs");
 });
 
-// new route - shows the form to create a new listing
-// must come BEFORE "/listings/:id" or express will think "new" is an :id
-router.get("/new", async(req, res) => {
-    res.render("listings/new.ejs");
-})
-
-// show route - shows details of ONE specific listing by its id
-router.get("/:id", async(req, res) => {
-    let { id } = req.params; // pulls the id value out of the url
-    const listing = await Listing.findById(id).populate("reviews"); // find that one listing in DB
+router.get("/:id", wrapAsync(async(req, res) => {
+    let { id } = req.params;
+    const listing = await Listing.findById(id).populate("reviews");
     res.render("listings/show.ejs", { listing });
-})
+}));
 
-// create route - receives form data and saves a new listing to DB
-router.post("/", validateListing, wrapAsync(async(req, res, next) => {
+router.get("/:id/edit", wrapAsync(async(req, res) => {
+    let { id } = req.params;
+    const listing = await Listing.findById(id);
+    res.render("listings/edit.ejs", { listing });
+}));
 
-    const newListing = new Listing(req.body.listing); // build a new listing using submitted form data
+router.post("/", validateListing, wrapAsync(async(req, res) => {
+    const newListing = new Listing(req.body.listing);
+    newListing.image = { url: req.body.listing.image, filename: "default" };
+    await newListing.save();
+    req.flash("success", "new listing created");
+    res.redirect("/listings");
+}));
 
-    await newListing.save(); // save it to MongoDB
-    res.redirect("/listings"); // go back to the index page to see it
-
-
-}))
-
-
-//update
 router.put("/:id", validateListing, wrapAsync(async(req, res) => {
-
     let { id } = req.params;
     await Listing.findByIdAndUpdate(id, {...req.body.listing });
     res.redirect("/listings");
 }));
-//delete
+
 router.delete("/:id", wrapAsync(async(req, res) => {
     let { id } = req.params;
-    let deletedListing = await Listing.findByIdAndDelete(id);
+    await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
 }));
 

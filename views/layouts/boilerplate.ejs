@@ -17,7 +17,9 @@
 <body>
     <%- include("../includes/navbar.ejs") %>
         <div class="container">
-            <%- body %>
+            <%- include("../includes/flash.ejs") %>
+
+                <%- body %>
         </div>
         <%- include("../includes/footer.ejs") %>
 

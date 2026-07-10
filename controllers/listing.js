@@ -36,13 +36,25 @@ module.exports.renderEditForm = (async(req, res) => {
         req.flash("error", "listing you requested does not exist ");
         return res.redirect("/listings");
     }
+    // prepare a resized image url preview for the edit form (if image exists)
+    let originalListing = listing.image && listing.image.url ? listing.image.url : null;
+    let originalImageUrl = null;
+    if (originalListing) {
+        originalImageUrl = originalListing.replace("/uploads", "/uploads/w_400,h_400,c_fill");
+    }
     console.log(listing);
-    res.render("listings/edit.ejs", { listing });
+    res.render("listings/edit.ejs", { listing, originalImageUrl });
 })
 module.exports.updateListing = (async(req, res) => {
     let { id } = req.params;
+    let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing });
+    if (typeof req.file !== "undefined") {
+        let url = req.file;
+        let filename = req.file.filename;
+        listing.image = { url: req.file.path, filename: req.file.filename };
+        await listing.save();
 
-    await Listing.findByIdAndUpdate(id, {...req.body.listing });
+    }
     req.flash("success", "listing updated");
     res.redirect(`/listings/${id}`);
 })

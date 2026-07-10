@@ -198,3 +198,8 @@ screen and (min-resolution: 192dpi) {
     -webkit-transition: background-position .7s;
     transition: background-position .7s;
 }
+
+#map {
+    width: 80vh;
+    height: 400px;
+}

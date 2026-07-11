@@ -65,3 +65,19 @@ module.exports.destroyListing = (async(req, res) => {
 
     res.redirect("/listings");
 })
+module.exports.index = async(req, res) => {
+    let search = req.query.search || "";
+    let allListings;
+    if (search) {
+        allListings = await Listing.find({
+            $or: [
+                { title: { $regex: search, $options: "i" } },
+                { location: { $regex: search, $options: "i" } },
+                { country: { $regex: search, $options: "i" } }
+            ]
+        });
+    } else {
+        allListings = await Listing.find({});
+    }
+    res.render("listings/index.ejs", { allListings });
+};

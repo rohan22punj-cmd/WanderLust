@@ -1,6 +1,50 @@
 <% layout("/layouts/boilerplate") -%>
 
+    <div class="filters">
+        <div class="filter">
+            <i class="fa-solid fa-fire"></i>
+            <p>Trending</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-bed"></i>
+            <p>Rooms</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-city"></i>
+            <p>Iconic Cities</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-mountain"></i>
+            <p>Mountains</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-chess-rook"></i>
+            <p>Castles</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-person-swimming"></i>
+            <p>Amazing Pools</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-campground"></i>
+            <p>Camping</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-tractor"></i>
+            <p>Farms</p>
+        </div>
+        <div class="filter">
+            <i class="fa-solid fa-snowflake"></i>
+            <p>Arctic</p>
+        </div>
 
+        <div class="tax-toggle-wrapper">
+            <label for="taxToggle">Display total after taxes</label>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="taxToggle">
+            </div>
+        </div>
+    </div>
 
     <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
         <% for (let listing of allListings) { %>
@@ -10,13 +54,39 @@
                     <div class="card-img-overlay"></div>
                     <div class="card-body">
                         <p class="card-text">
-                            <b><%= listing.title %></b>
-                            <br>
-                            <%= listing.price ? listing.price.toLocaleString("en-IN") : "Price not set" %>/night
-                                <br>
+                            <b><%= listing.title %></b><br>
+                            <span class="listing-price" data-price="<%= listing.price %>">
+                            &#8377;<%= listing.price ? listing.price.toLocaleString("en-IN") : "Price not set" %>
+                        </span>/night
+                            <span class="tax-info" style="display:none; font-size: 0.8rem; color: gray;">
+                            (incl. 18% GST: &#8377;<%= listing.price ? Math.round(listing.price * 1.18).toLocaleString("en-IN") : "" %>)
+                        </span>
                         </p>
                     </div>
                 </div>
             </a>
             <% } %>
     </div>
+
+    <script>
+        const taxToggle = document.getElementById('taxToggle');
+        const taxInfos = document.querySelectorAll('.tax-info');
+        const prices = document.querySelectorAll('.listing-price');
+
+        taxToggle.addEventListener('change', () => {
+            if (taxToggle.checked) {
+                taxInfos.forEach(el => el.style.display = 'inline');
+                prices.forEach(el => {
+                    const original = parseInt(el.dataset.price);
+                    const withTax = Math.round(original * 1.18);
+                    el.innerHTML = `&#8377;${withTax.toLocaleString('en-IN')}`;
+                });
+            } else {
+                taxInfos.forEach(el => el.style.display = 'none');
+                prices.forEach(el => {
+                    const original = parseInt(el.dataset.price);
+                    el.innerHTML = `&#8377;${original.toLocaleString('en-IN')}`;
+                });
+            }
+        });
+    </script>

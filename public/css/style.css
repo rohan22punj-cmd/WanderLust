@@ -1,10 +1,25 @@
 body {
     font-family: "Plus Jakarta Sans", sans-serif;
-    padding-left: 4rem;
-    padding-right: 4rem;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    flex: 1;
+    padding-left: 4rem;
+    padding-right: 4rem;
+    min-height: calc(100vh - 5rem - 5rem);
+}
+
+footer {
+    background-color: #f7f7f7;
+    border-top: 1px solid #ddd;
+    padding: 1.5rem 4rem;
+    width: 100%;
+    margin-top: auto;
 }
 
 .container {
@@ -28,40 +43,62 @@ body {
 
 /* footer */
 
-.f-info-links a {
-    text-decoration: none;
-    color: #222222;
-}
 
-.f-info-links a :hover {
-    text-decoration: underline;
-}
-
-.f-info-socials,
-.f-info-links,
-.f-info-brand {
+/* footer {
+    background-color: #f7f7f7;
+    border-top: 1px solid #ddd;
+    padding: 1.5rem 4rem;
     width: 100%;
-    font-size: 1.2rem;
-    margin-right: 2rem;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    margin-left: -4rem;
+    margin-right: -4rem;
+    box-sizing: content-box;
+} */
+
+.f-info {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.f-info-socials {
+    display: flex;
+    gap: 1rem;
 }
 
 .f-info-socials i {
-    margin-right: 1rem;
-    font-size: 1.2rem;
-    vertical-align: middle;
+    font-size: 1.4rem;
+    color: #444;
+    cursor: pointer;
+    transition: color 0.2s;
 }
 
-.f-info {
-    text-align: center;
-    height: 8rem;
-    background-color: #ebebeb;
+.f-info-socials i:hover {
+    color: #ff385c;
+}
+
+.f-info-brand {
+    font-size: 0.9rem;
+    color: #717171;
+}
+
+.f-info-links {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: space-evenly;
+    gap: 1.5rem;
+}
+
+.f-info-links a {
+    text-decoration: none;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.f-info-links a:hover {
+    text-decoration: underline;
 }
 
 
@@ -162,4 +199,93 @@ form label {
 .showcard {
     padding-left: 0;
     padding-right: 0;
+}
+
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #ddd;
+    overflow-x: auto;
+}
+
+.filter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #717171;
+    min-width: 60px;
+}
+
+.filter i {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.filter:hover {
+    color: black;
+    border-bottom: 2px solid black;
+}
+
+.filter p {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.tax-toggle-wrapper {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    min-width: fit-content;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.search-input {
+    border: 1px solid #ddd;
+    border-radius: 25px 0 0 25px;
+    padding: 0.5rem 1.2rem;
+    outline: none;
+    font-size: 0.9rem;
+    width: 220px;
+    border-right: none;
+}
+
+.search-btn {
+    background-color: #ff385c;
+    color: white;
+    border: none;
+    border-radius: 0 25px 25px 0;
+    padding: 0.5rem 1.2rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.search-btn:hover {
+    background-color: #e0314f;
+}
+
+.navbar .search-form {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+.navbar {
+    position: relative;
+    z-index: 100;
 }

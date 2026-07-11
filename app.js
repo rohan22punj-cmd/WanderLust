@@ -27,7 +27,7 @@ const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const MONGO_URL = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/wanderlust";
 
 main().then(() => { console.log("connected to DB"); })
 async function main() {
@@ -81,9 +81,9 @@ app.get("/demouser", async(req, res) => {
 
 
 
-app.get("/", (req, res) => {
-    res.send("hi i am root");
-});
+// app.get("/", (req, res) => {
+//     res.send("hi i am root");
+// });
 
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);

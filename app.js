@@ -1,9 +1,6 @@
 if (process.env.NODE_ENV !== "production") {
     require('dotenv').config();
 }
-// console.log(process.env.SECRET)
-
-
 
 const express = require("express");
 const app = express();
@@ -15,6 +12,7 @@ const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const { listingSchema, reviewSchema } = require("./schema.js");
 const session = require("express-session");
+const { MongoStore } = require("connect-mongo");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStratergy = require("passport-local");
@@ -29,10 +27,17 @@ const userRouter = require("./routes/user.js");
 
 const MONGO_URL = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/wanderlust";
 
-main().then(() => { console.log("connected to DB"); })
+let isConnected = false;
+
 async function main() {
+    if (isConnected) return;
     await mongoose.connect(MONGO_URL);
+    isConnected = true;
+    console.log("connected to DB");
 }
+
+// Kick off the first connection attempt eagerly (helps warm starts)
+main().catch(err => console.log("DB connection error:", err));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -41,8 +46,28 @@ app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
+// CRITICAL: block every request until the DB connection is confirmed ready.
+// This is what actually fixes the buffering timeout on serverless cold starts.
+app.use(async(req, res, next) => {
+    try {
+        await main();
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
+const store = MongoStore.create({
+    mongoUrl: MONGO_URL,
+    touchAfter: 24 * 60 * 60,
+    crypto: {
+        secret: process.env.SECRET || "mysupersecretcode"
+    }
+});
+
 const sessionOptions = {
-    secret: "mysupersecretcode",
+    store,
+    secret: process.env.SECRET || "mysupersecretcode",
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -51,6 +76,10 @@ const sessionOptions = {
         httpOnly: true,
     }
 };
+
+store.on("error", (e) => {
+    console.log("session store error", e);
+});
 
 app.use(session(sessionOptions));
 app.use(flash());
@@ -78,12 +107,9 @@ app.get("/demouser", async(req, res) => {
     res.send(registeredUser);
 });
 
-
-
-
-// app.get("/", (req, res) => {
-//     res.send("hi i am root");
-// });
+app.get("/", (req, res) => {
+    res.redirect("/listings");
+});
 
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
@@ -99,6 +125,11 @@ app.use((err, req, res, next) => {
     res.status(statusCode).send(message);
 });
 
-app.listen(8080, () => {
-    console.log("server is listening");
-});
+// Only bind a port locally / outside Vercel's serverless runtime.
+if (process.env.VERCEL !== "1") {
+    app.listen(8080, () => {
+        console.log("server is listening");
+    });
+}
+
+module.exports = app;
